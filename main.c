@@ -28,6 +28,15 @@ void load_reserved_words() {
     fclose(file);
 }
 
+int is_reserved_word(const char *word) {
+    for (int i = 0; i < num_palavras_reservadas; i++) {
+        if (strcmp(palavras_reservadas[i], word) == 0) {
+            return 1; // A palavra foi encontrada
+        }
+    }
+    return 0; // A palavra não foi encontrada
+}
+
 void error(char msg[]) {
     printf("%s\n", msg);
     exit(1);
@@ -50,12 +59,12 @@ TOKEN AnaLex(FILE *file) {
                 else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') { // inicio de identificador - lexema
                     estado = 1;
                     lexema[tamLexema] = c;
-                    lexema[tamLexema + 1] = '\0';
+                    lexema[++tamLexema] = '\0';
                 }
                 else if (c >= '1' && c <= '9'){ // inicio constante inteira - digitos
                     estado = 10;
                     digitos[tamDigitos] = c;
-                    digitos[tamDigitos + 1] = '\0';
+                    digitos[++tamDigitos] = '\0';
                 }
                 else if (c == '+') { // Sinal de adicao
                     estado = 3;
@@ -65,6 +74,8 @@ TOKEN AnaLex(FILE *file) {
                 }
                 else if (c == '-') { // Sinal de subtracao
                     estado = 4;
+                    token.categoria = SN;
+                    token.codigo = SUBTRACAO;
                     return token;
                 }
                 else if (c == '*') { // Sinal de multiplicacao
@@ -82,7 +93,6 @@ TOKEN AnaLex(FILE *file) {
                     estado = 7;
                     token.categoria = SN;
                     token.codigo = ATRIB;
-                    return token;
                 }
                 else if (c == '(') { // Sinal de abre parenteses
                     estado = 8;
@@ -144,7 +154,7 @@ TOKEN AnaLex(FILE *file) {
                     estado = 25;
                     token.categoria = SN;
                 }
-                else if (c == ',') { // Sinal de ponto e virgula
+                else if (c == ',') { // Sinal virgula
                     estado = 26;
                     token.categoria = SN;
                     token.codigo = VIRGULA;
@@ -165,27 +175,29 @@ TOKEN AnaLex(FILE *file) {
                 }
                 break;
 
-            case 1: // Identificador
+            case 1: // Identificador ou palavra reservada
                 if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_') {
                     estado = 1;
                     lexema[tamLexema] = c;
-                    lexema[tamLexema + 1] = '\0';
+                    lexema[++tamLexema] = '\0';
                 } else {
-                    estado = 2;
                     ungetc(c, file);
-                    token.categoria = ID;
                     strcpy(token.lexema, lexema);
+                    if (is_reserved_word(token.lexema)) {
+                        estado = 28;
+                        token.categoria = PR;
+                    } else {
+                        estado = 2;
+                        token.categoria = ID;
+                    }
                     return token;
                 }
                 break;
             
             case 6: // Vericar comentário
                 if (c == '/') {
-                    estado = 27;
-                    token.categoria = COMENTARIO;
-                    lexema[tamLexema] = c;
-                    lexema[tamLexema + 1] = '/';
-                    lexema[tamLexema + 2] = '\0';
+                    estado = 27; // Comentario
+                    break;
                 } else {
                     return token;
                 }
@@ -197,8 +209,7 @@ TOKEN AnaLex(FILE *file) {
                     token.codigo = IGUAL;
                     return token;
                 } else {
-                    token.categoria = SN;
-                    token.codigo = SUBTRACAO;
+                    ungetc(c, file);
                     return token;
                 }
                 break;
@@ -207,7 +218,7 @@ TOKEN AnaLex(FILE *file) {
                 if (c >= '0' && c <= '9') {
                     estado = 10;
                     digitos[tamDigitos] = c;
-                    digitos[tamDigitos + 1] = '\0';
+                    digitos[++tamDigitos] = '\0';
                 } else {
                     estado = 11;
                     ungetc(c, file);
@@ -271,13 +282,11 @@ TOKEN AnaLex(FILE *file) {
                 break;
 
             case 27: // Vericar comentário
-                if (c != '\n') {
-                    estado = 27;
-                    lexema[tamLexema] = c;
-                    lexema[tamLexema + 1] = '\0';
-                } else {
-                    return token;
+                if (c == '\n'){
+                    estado = 0;
+                    ungetc(c, file);
                 }
+                break;
         }
     }
     
@@ -285,5 +294,53 @@ TOKEN AnaLex(FILE *file) {
 
 int main() {
     load_reserved_words();
-    FILE *file = fopen("teste.txt", "r");
+
+    FILE *file;
+    TOKEN token;
+    
+    if ((file = fopen("teste.txt", "r")) == NULL) {
+        error("Erro ao abrir o arquivo");
+    }
+
+    printf("LINHA %d\n", contLinha);
+
+    while(1) { // Laço infinito para processar até o fim do arquivo
+        token = AnaLex(file);
+        switch (token.categoria){
+            case ID: printf("<ID, %s>\n", token.lexema); break;
+            case PR: printf("<PR, %s>\n", token.lexema); break;
+            case SN:
+                switch (token.codigo){
+                case ADICAO: printf("<SN, ADICAO>\n"); break;
+                case SUBTRACAO: printf("<SN, SUBTRACAO>\n"); break;
+                case MULTIPLICACAO: printf("<SN, MULTIPLICACAO>\n"); break;
+                case DIVISAO: printf("<SN, DIVISAO>\n"); break;
+                case ATRIB: printf("<SN, ATRIB>\n"); break;
+                case IGUAL: printf("<SN, IGUALDADE>\n"); break;
+                case NEGACAO: printf("<SN, NEGACAO>\n"); break;
+                case E: printf("<SN, E>\n"); break;
+                case OR: printf("<SN, OR>\n"); break;
+                case MENOR: printf("<SN, MENOR>\n"); break;
+                case MAIOR: printf("<SN, MAIOR>\n"); break;
+                case MENOR_IGUAL: printf("<SN, MENOR_IGUAL>\n"); break;
+                case MAIOR_IGUAL: printf("<SN, MAIOR_IGUAL>\n"); break;
+                case DIFERENTE_DE: printf("<SN, DIFERENTE_DE>\n"); break;
+                case AND: printf("<SN, AND>\n"); break;
+                case ABRE_PARENTESE: printf("<SN, ABRE_PARENTESE>\n"); break;
+                case FECHA_PARENTESE: printf("<SN, FECHA_PARENTESE>\n"); break;
+                case ABRE_CHAVES: printf("<SN, ABRE_CHAVES>\n"); break;
+                case FECHA_CHAVES: printf("<SN, FECHA_CHAVES>\n"); break;
+                case ABRE_COLCHETE: printf("<SN, ABRE_COLCHETE>\n"); break;
+                case FECHA_COLCHETE: printf("<SN, FECHA_COLCHETE>\n"); break;
+                case VIRGULA: printf("<SN, VIRGULA>\n"); break;
+                }
+                break;
+            case CT_I: printf("<CT_I, %d>\n", token.valInt); break;
+            case FIM_EXPR: printf("<FIM_EXPR>\n"); printf("\nLINHA %d\n", contLinha); break;
+            case FIM_ARQ: printf("<FIM_ARQ>\n"); break;
+        }
+        if (token.categoria == FIM_ARQ) break;
+    }
+    fclose(file);
+    return 0;
 }

@@ -1,0 +1,8 @@
+- // subtracao
++ // adicao
+=
+*
+==
+while
+if
+15
