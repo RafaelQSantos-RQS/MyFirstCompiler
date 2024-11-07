@@ -8,13 +8,45 @@
 #define TAM_NUM 20
 #define NUM_PALAVRAS_RESERVADAS 28
 
+// Array of reserved words, each with a maximum length of TAM_LEXEMA
 char RESERVED_WORDS[][TAM_LEXEMA] = {
-    "const", "pr", "init", "endp", "char", "int", "real", "bool", 
-    "do", "while", "endw", "var", "from", "to", "dt", "by", 
-    "if", "endv", "elif", "else", "endi", "getout", "getint", 
-    "getchar", "getreal", "putint", "putchar", "putreal"
+    "const",  // Represents the keyword "const"
+    "pr",     // Represents the keyword "pr"
+    "init",   // Represents the keyword "init"
+    "endp",   // Represents the keyword "endp"
+    "char",   // Represents the keyword "char"
+    "int",    // Represents the keyword "int"
+    "real",   // Represents the keyword "real"
+    "bool",   // Represents the keyword "bool"
+    "do",     // Represents the keyword "do"
+    "while",  // Represents the keyword "while"
+    "endw",   // Represents the keyword "endw"
+    "var",    // Represents the keyword "var"
+    "from",   // Represents the keyword "from"
+    "to",     // Represents the keyword "to"
+    "dt",     // Represents the keyword "dt"
+    "by",     // Represents the keyword "by"
+    "if",     // Represents the keyword "if"
+    "endv",   // Represents the keyword "endv"
+    "elif",   // Represents the keyword "elif"
+    "else",   // Represents the keyword "else"
+    "endi",   // Represents the keyword "endi"
+    "getout", // Represents the keyword "getout"
+    "getint", // Represents the keyword "getint"
+    "getchar",// Represents the keyword "getchar"
+    "getreal",// Represents the keyword "getreal"
+    "putint", // Represents the keyword "putint"
+    "putchar",// Represents the keyword "putchar"
+    "putreal" // Represents the keyword "putreal"
 };
 
+/**
+ * Checks if the given word is a reserved word.
+ * 
+ * @param word The word to check.
+ * @return The index of the reserved word in the RESERVED_WORDS array if found, 
+ *         otherwise returns -1.
+ */
 int is_reserved_word(const char *word)
 {
     for (int i = 0; i < NUM_PALAVRAS_RESERVADAS; i++)
@@ -27,12 +59,23 @@ int is_reserved_word(const char *word)
     return -1; // A palavra não foi encontrada
 }
 
+/**
+ * Prints an error message and exits the program.
+ * 
+ * @param msg The error message to print.
+ */
 void error(char msg[])
 {
     printf("%s\n", msg);
     exit(1);
 }
 
+/**
+ * @brief Analisador léxico que lê um arquivo e retorna tokens.
+ * 
+ * @param file Arquivo a ser lido.
+ * @return O token lido.
+ */
 TOKEN AnaLex(FILE *file)
 {
 
@@ -384,13 +427,29 @@ TOKEN AnaLex(FILE *file)
     }
 }
 
+/**
+ * Função principal do programa.
+ * 
+ * Abre um arquivo e processa suas linhas,
+ * chamando a função AnaLex() para analisar cada linha e extrair seus
+ * tokens. Em seguida, imprime os tokens extraídos na forma de pares
+ * categoria, lexema. Se o token for uma palavra reservada, imprime
+ * a categoria e o valor da palavra reservada. Se o token for um sinal,
+ * imprime a categoria e o valor do sinal. Se o token for um identificador,
+ * imprime a categoria e o valor do identificador. Se o token for uma
+ * constante inteira, imprime a categoria e o valor da constante. Se o
+ * token for uma constante real, imprime a categoria e o valor da
+ * constante. Se o token for uma string, imprime a categoria e o valor
+ * da string. Quando o token for o final do arquivo, imprime o final do
+ * arquivo e fecha o arquivo.
+ */
 int main()
 {
 
     FILE *file;
     TOKEN token;
 
-    if ((file = fopen("teste.txt", "r")) == NULL)
+    if ((file = fopen("teste_palavra_reservada.txt", "r")) == NULL)
     {
         error("Erro ao abrir o arquivo");
     }
