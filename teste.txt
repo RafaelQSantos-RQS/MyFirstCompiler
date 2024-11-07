@@ -23,4 +23,5 @@ while // PR
 ] // fecha colchetes
 , // virgula
 15 // constante inteira
-
+"teste" // string
+15.14 // constante real
