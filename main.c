@@ -6,41 +6,25 @@
 #include "Analex.h"
 #define TAM_LEXEMA 50
 #define TAM_NUM 20
-#define MAX_PALAVRAS_RESERVADAS 100
+#define NUM_PALAVRAS_RESERVADAS 28
 
-char *palavras_reservadas[MAX_PALAVRAS_RESERVADAS];
-int num_palavras_reservadas = 0;
-
-void load_reserved_words()
-{
-    FILE *file = fopen("palavras_reservadas.txt", "r");
-    if (file == NULL)
-    {
-        fprintf(stderr, "Erro ao abrir o arquivo 'palavras_reservadas.txt'\n");
-        exit(1);
-    }
-
-    char line[TAM_LEXEMA];
-    while (fgets(line, sizeof(line), file))
-    {
-        line[strcspn(line, "\n")] = '\0'; // remove o '\n' do final
-        palavras_reservadas[num_palavras_reservadas] = strdup(line);
-        num_palavras_reservadas++;
-    }
-
-    fclose(file);
-}
+char RESERVED_WORDS[][TAM_LEXEMA] = {
+    "const", "pr", "init", "endp", "char", "int", "real", "bool", 
+    "do", "while", "endw", "var", "from", "to", "dt", "by", 
+    "if", "endv", "elif", "else", "endi", "getout", "getint", 
+    "getchar", "getreal", "putint", "putchar", "putreal"
+};
 
 int is_reserved_word(const char *word)
 {
-    for (int i = 0; i < num_palavras_reservadas; i++)
+    for (int i = 0; i < NUM_PALAVRAS_RESERVADAS; i++)
     {
-        if (strcmp(palavras_reservadas[i], word) == 0)
+        if (strcmp(RESERVED_WORDS[i], word) == 0)
         {
-            return 1; // A palavra foi encontrada
+            return i; // A palavra foi encontrada
         }
     }
-    return 0; // A palavra não foi encontrada
+    return -1; // A palavra não foi encontrada
 }
 
 void error(char msg[])
@@ -226,10 +210,12 @@ TOKEN AnaLex(FILE *file)
             {
                 ungetc(c, file);
                 strcpy(token.lexema, lexema);
-                if (is_reserved_word(token.lexema))
+                int is_rw = is_reserved_word(token.lexema);
+                if (is_rw >= 0)
                 {
                     estado = 28;
-                    token.categoria = PR;
+                    token.categoria = PALAVRA_RESERVADA;
+                    token.whatReservedWord = is_rw;
                 }
                 else
                 {
@@ -400,7 +386,6 @@ TOKEN AnaLex(FILE *file)
 
 int main()
 {
-    load_reserved_words();
 
     FILE *file;
     TOKEN token;
@@ -420,8 +405,38 @@ int main()
         case ID:
             printf("<ID, %s>\n", token.lexema);
             break;
-        case PR:
-            printf("<PR, %s>\n", token.lexema);
+        case PALAVRA_RESERVADA:
+            switch (token.whatReservedWord) {
+            case CONST: printf("<PALAVRA_RESERVADA, CONST>\n"); break;
+            case PR: printf("<PALAVRA_RESERVADA, PR>\n"); break;
+            case INIT: printf("<PALAVRA_RESERVADA, INIT>\n"); break;
+            case ENDP: printf("<PALAVRA_RESERVADA, ENDP>\n"); break;
+            case CHAR: printf("<PALAVRA_RESERVADA, CHAR>\n"); break;
+            case INT: printf("<PALAVRA_RESERVADA, INT>\n"); break;
+            case REAL: printf("<PALAVRA_RESERVADA, REAL>\n"); break;
+            case BOOL: printf("<PALAVRA_RESERVADA, BOOL>\n"); break;
+            case DO: printf("<PALAVRA_RESERVADA, DO>\n"); break;
+            case WHILE: printf("<PALAVRA_RESERVADA, WHILE>\n"); break;
+            case ENDW: printf("<PALAVRA_RESERVADA, ENDW>\n"); break;
+            case VAR: printf("<PALAVRA_RESERVADA, VAR>\n"); break;
+            case FROM: printf("<PALAVRA_RESERVADA, FROM>\n"); break;
+            case TO: printf("<PALAVRA_RESERVADA, TO>\n"); break;
+            case DT: printf("<PALAVRA_RESERVADA, DT>\n"); break;
+            case BY: printf("<PALAVRA_RESERVADA, BY>\n"); break;
+            case IF: printf("<PALAVRA_RESERVADA, IF>\n"); break;
+            case ENDV: printf("<PALAVRA_RESERVADA, ENDV>\n"); break;
+            case ELIF: printf("<PALAVRA_RESERVADA, ELIF>\n"); break;
+            case ELSE: printf("<PALAVRA_RESERVADA, ELSE>\n"); break;
+            case ENDI: printf("<PALAVRA_RESERVADA, ENDI>\n"); break;
+            case GETOUT: printf("<PALAVRA_RESERVADA, GETOUT>\n"); break;
+            case GETINT: printf("<PALAVRA_RESERVADA, GETINT>\n"); break;
+            case GETCHAR: printf("<PALAVRA_RESERVADA, GETCHAR>\n"); break;
+            case GETREAL: printf("<PALAVRA_RESERVADA, GETREAL>\n"); break;
+            case PUTINT: printf("<PALAVRA_RESERVADA, PUTINT>\n"); break;
+            case PUTCHAR: printf("<PALAVRA_RESERVADA, PUTCHAR>\n"); break;
+            case PUTREAL: printf("<PALAVRA_RESERVADA, PUTREAL>\n"); break;
+            break;
+            }
             break;
         case SN:
             switch (token.codigo)
