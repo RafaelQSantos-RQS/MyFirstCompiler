@@ -449,7 +449,7 @@ int main()
     FILE *file;
     TOKEN token;
 
-    if ((file = fopen("teste_palavra_reservada.txt", "r")) == NULL)
+    if ((file = fopen("teste.txt", "r")) == NULL)
     {
         error("Erro ao abrir o arquivo");
     }
